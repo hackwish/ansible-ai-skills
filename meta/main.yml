@@ -3,6 +3,8 @@
 
 galaxy_info:
   author: marcelo
+  role_name: ai_skills
+  namespace: marcelo
   description: Installs model and AI agent skills/capabilities via the Skills CLI package manager.
   company: None
   license: MIT
