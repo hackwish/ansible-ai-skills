@@ -1,0 +1,10 @@
+# Ansible files
+*.retry
+.ansible/
+**/__pycache__/
+*.pyc
+
+# Local/editor config
+.idea/
+.vscode/
+.DS_Store

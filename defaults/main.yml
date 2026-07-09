@@ -1,0 +1,44 @@
+---
+# defaults file for ansible-ai-skills
+
+# The system user for whom to install the skills.
+# Defaults to the user running Ansible (excluding root if run via sudo).
+ai_skills_user: "{{ ansible_env.SUDO_USER | default(ansible_user_id) }}"
+
+# Custom path to npx if it is not in the user's standard PATH or profiles.
+# If empty, the role will attempt to locate it automatically.
+ai_skills_npx_path: ""
+
+# Whether to continue installing subsequent skills if one of them fails.
+ai_skills_ignore_errors: false
+
+# Whether to install the skills globally (available for all projects of the user).
+ai_skills_global: true
+
+# List of skills to be installed via `npx skills add`
+ai_skills:
+  - repo: "https://github.com/hashicorp/agent-skills"
+    skill: "terraform-style-guide"
+  - repo: "https://github.com/jeffallan/claude-skills"
+    skill: "kubernetes-specialist"
+  - repo: "https://github.com/vercel-labs/skills"
+    skill: "find-skills"
+  - repo: "https://github.com/anthropics/skills"
+    skill: "skill-creator"
+  - repo: "https://github.com/obra/superpowers"
+    skill: "systematic-debugging"
+  - repo: "https://github.com/wshobson/agents"
+    skill: "code-review-excellence"
+  - repo: "https://github.com/anthropics/skills"
+    skill: "frontend-design"
+  - repo: "https://github.com/anthropics/skills"
+    skill: "mcp-builder"
+  - repo: "https://github.com/obra/superpowers"
+    skill: "writing-plans"
+  - repo: "https://github.com/softaworks/agent-toolkit"
+    skill: "skill-judge"
+  - repo: "https://github.com/softaworks/agent-toolkit"
+    skill: "commit-work"
+  - repo: "https://github.com/softaworks/agent-toolkit"
+    skill: "daily-meeting-update"
+  - repo: "JuliusBrussee/caveman"

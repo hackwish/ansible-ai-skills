@@ -1,0 +1,15 @@
+---
+# meta file for ansible-ai-skills
+
+galaxy_info:
+  author: marcelo
+  description: Installs model and AI agent skills/capabilities via the Skills CLI package manager.
+  company: None
+  license: MIT
+  min_ansible_version: "2.10"
+  galaxy_tags:
+    - ai
+    - skills
+    - development
+    - agents
+    - tools

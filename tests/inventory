@@ -1,0 +1,4 @@
+#!
+# hosts file used by test.yml
+
+localhost ansible_connection=local

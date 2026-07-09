@@ -1,0 +1,157 @@
+---
+# tasks file for ansible-ai-skills
+
+- name: Retrieve user information for "{{ ai_skills_user }}"
+  ansible.builtin.user:
+    name: "{{ ai_skills_user }}"
+  register: _ai_skills_user_info
+  failed_when: false
+
+- name: Detect user home directory via shell if user info is unavailable
+  ansible.builtin.shell: echo "$HOME"
+  register: _ai_skills_user_home_shell
+  become: true
+  become_user: "{{ ai_skills_user }}"
+  changed_when: false
+  when: _ai_skills_user_info.home is not defined or _ai_skills_user_info.home == ""
+
+- name: Set home directory variable from user info
+  ansible.builtin.set_fact:
+    _ai_skills_user_home: "{{ _ai_skills_user_info.home | default('') }}"
+
+- name: Set home directory variable from shell fallback
+  ansible.builtin.set_fact:
+    _ai_skills_user_home: "{{ _ai_skills_user_home_shell.stdout | trim }}"
+  when:
+    - _ai_skills_user_home == ""
+    - _ai_skills_user_home_shell is defined
+    - _ai_skills_user_home_shell.stdout is defined
+
+- name: Debug target user home directory
+  ansible.builtin.debug:
+    msg: "Target user: {{ ai_skills_user }} | Home directory: {{ _ai_skills_user_home }}"
+    verbosity: 1
+
+- name: Locate npx executable on target system
+  ansible.builtin.shell: |
+    # Add common Node/npm installation paths to PATH
+    export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:$PATH"
+
+    # Source shell profiles to initialize nvm, fnm, asdf, etc.
+    if [ -f "$HOME/.bash_profile" ]; then
+      . "$HOME/.bash_profile"
+    elif [ -f "$HOME/.profile" ]; then
+      . "$HOME/.profile"
+    fi
+
+    if [ -f "$HOME/.zshrc" ]; then
+      . "$HOME/.zshrc" 2>/dev/null || true
+    elif [ -f "$HOME/.bashrc" ]; then
+      . "$HOME/.bashrc" 2>/dev/null || true
+    fi
+
+    which npx
+  args:
+    executable: /bin/bash
+  register: _ai_skills_npx_locate
+  failed_when: false
+  changed_when: false
+  become: true
+  become_user: "{{ ai_skills_user }}"
+  when: ai_skills_npx_path == ""
+
+- name: Set resolved npx path from custom variable
+  ansible.builtin.set_fact:
+    _ai_skills_resolved_npx: "{{ ai_skills_npx_path }}"
+  when: ai_skills_npx_path != ""
+
+- name: Set resolved npx path from located npx
+  ansible.builtin.set_fact:
+    _ai_skills_resolved_npx: "{{ _ai_skills_npx_locate.stdout | trim if _ai_skills_npx_locate.rc | default(1) == 0 else '' }}"
+  when:
+    - ai_skills_npx_path == ""
+    - _ai_skills_npx_locate is defined
+    - _ai_skills_npx_locate.stdout is defined
+
+- name: Fail if npx executable cannot be found
+  ansible.builtin.fail:
+    msg: >
+      Could not find 'npx' executable for user '{{ ai_skills_user }}'.
+      Please verify Node.js and npm are installed. If Node/npm is installed in a custom location,
+      you can specify it by setting the 'ai_skills_npx_path' variable in your playbook or defaults.
+  when: _ai_skills_resolved_npx == ""
+
+- name: Debug resolved npx executable path
+  ansible.builtin.debug:
+    msg: "Using npx executable at: {{ _ai_skills_resolved_npx }}"
+
+- name: Install AI agent skills
+  ansible.builtin.shell: |
+    # Load user shell environments to ensure local agent config directories are accessible
+    if [ -f "$HOME/.bash_profile" ]; then
+      . "$HOME/.bash_profile"
+    elif [ -f "$HOME/.profile" ]; then
+      . "$HOME/.profile"
+    fi
+
+    if [ -f "$HOME/.zshrc" ]; then
+      . "$HOME/.zshrc" 2>/dev/null || true
+    elif [ -f "$HOME/.bashrc" ]; then
+      . "$HOME/.bashrc" 2>/dev/null || true
+    fi
+
+    # Run the npx skills add command
+    SKILL_ARG=""
+    if [ -n "{{ item.skill | default('') }}" ]; then
+      SKILL_ARG="--skill {{ item.skill | default('') }}"
+    fi
+    GLOBAL_ARG=""
+    if [ "{{ ai_skills_global | bool | string | lower }}" = "true" ]; then
+      GLOBAL_ARG="--global"
+    fi
+    {{ _ai_skills_resolved_npx }} --yes skills add {{ item.repo }} $SKILL_ARG $GLOBAL_ARG
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ _ai_skills_user_home }}"
+    PATH: "/opt/homebrew/bin:/usr/local/bin:/usr/bin:{{ _ai_skills_resolved_npx | dirname }}:{{ ansible_env.PATH | default('/usr/bin') }}"
+  loop: "{{ ai_skills }}"
+  become: true
+  become_user: "{{ ai_skills_user }}"
+  register: _ai_skills_install_results
+  ignore_errors: "{{ ai_skills_ignore_errors }}"
+  changed_when: >
+    'Added skill' in _ai_skills_install_results.stdout or
+    'Successfully' in _ai_skills_install_results.stdout or
+    _ai_skills_install_results.rc == 0
+
+- name: List installed AI agent skills
+  ansible.builtin.shell: |
+    # Load user shell environments to ensure local agent config directories are accessible
+    if [ -f "$HOME/.bash_profile" ]; then
+      . "$HOME/.bash_profile"
+    elif [ -f "$HOME/.profile" ]; then
+      . "$HOME/.profile"
+    fi
+
+    if [ -f "$HOME/.zshrc" ]; then
+      . "$HOME/.zshrc" 2>/dev/null || true
+    elif [ -f "$HOME/.bashrc" ]; then
+      . "$HOME/.bashrc" 2>/dev/null || true
+    fi
+
+    # Run list command
+    {{ _ai_skills_resolved_npx }} --yes skills list{{ ' --global' if ai_skills_global | bool else '' }}
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ _ai_skills_user_home }}"
+    PATH: "/opt/homebrew/bin:/usr/local/bin:/usr/bin:{{ _ai_skills_resolved_npx | dirname }}:{{ ansible_env.PATH | default('/usr/bin') }}"
+  become: true
+  become_user: "{{ ai_skills_user }}"
+  register: _ai_skills_list_output
+  changed_when: false
+
+- name: Display installed AI agent skills
+  ansible.builtin.debug:
+    var: _ai_skills_list_output.stdout_lines

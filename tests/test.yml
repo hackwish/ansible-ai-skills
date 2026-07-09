@@ -1,0 +1,8 @@
+---
+# test.yml
+
+- name: Test AI skills installation
+  hosts: all
+  gather_facts: true
+  roles:
+    - ansible-ai-skills
