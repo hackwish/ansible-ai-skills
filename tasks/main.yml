@@ -93,12 +93,79 @@
     - _ai_skills_npx_locate is defined
     - _ai_skills_npx_locate.stdout is defined
 
-- name: Fail if npx executable cannot be found
+- name: Attempt to install Node.js when npx is not found (macOS Homebrew)
+  ansible.builtin.command: brew install node
+  become: false
+  when:
+    - _ai_skills_resolved_npx == ""
+    - ansible_system == "Darwin"
+  register: _ai_skills_brew_result
+  changed_when: '"already installed" not in _ai_skills_brew_result.stdout'
+  failed_when: false
+
+- name: Attempt to install Node.js when npx is not found (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name:
+      - nodejs
+      - npm
+    state: present
+    update_cache: true
+  become: true
+  when:
+    - _ai_skills_resolved_npx == ""
+    - ansible_os_family == "Debian"
+  register: _ai_skills_apt_result
+  failed_when: false
+
+- name: Attempt to install Node.js when npx is not found (RHEL/Fedora)
+  ansible.builtin.dnf:
+    name:
+      - nodejs
+      - npm
+    state: present
+  become: true
+  when:
+    - _ai_skills_resolved_npx == ""
+    - ansible_os_family == "RedHat"
+  register: _ai_skills_dnf_result
+  failed_when: false
+
+- name: Re-locate npx after install attempt
+  ansible.builtin.shell: |
+    export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:$PATH"
+    if [ -d "$HOME/.fnm/current/bin" ]; then
+      export PATH="$HOME/.fnm/current/bin:$PATH"
+    fi
+    if [ -d "$HOME/.fnm/aliases/default/bin" ]; then
+      export PATH="$HOME/.fnm/aliases/default/bin:$PATH"
+    fi
+    for _dir in "$HOME/.nvm/versions/node"/*/bin; do
+      [ -d "$_dir" ] && export PATH="$_dir:$PATH"
+    done
+    command -v npx
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ _ai_skills_user_home }}"
+  register: _ai_skills_npx_retry
+  become: true
+  become_user: "{{ ai_skills_user }}"
+  changed_when: false
+  failed_when: false
+  when: _ai_skills_resolved_npx == ""
+
+- name: Update resolved npx path after install attempt
+  ansible.builtin.set_fact:
+    _ai_skills_resolved_npx: "{{ _ai_skills_npx_retry.stdout | trim if _ai_skills_npx_retry.rc | default(1) == 0 else '' }}"
+  when: _ai_skills_resolved_npx == ""
+
+- name: Fail if npx executable cannot be found after all attempts
   ansible.builtin.fail:
     msg: >
       Could not find 'npx' executable for user '{{ ai_skills_user }}'.
-      Please verify Node.js and npm are installed. If Node/npm is installed in a custom location,
-      you can specify it by setting the 'ai_skills_npx_path' variable in your playbook or defaults.
+      Tried auto-install via Homebrew (macOS), apt (Debian), and dnf (RHEL).
+      Please verify Node.js and npm are installed, or set 'ai_skills_npx_path'
+      in your playbook or defaults.
   when: _ai_skills_resolved_npx == ""
 
 - name: Debug resolved npx executable path
