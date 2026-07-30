@@ -1,3 +1,11 @@
+## [1.0.2](https://github.com/hackwish/ansible-ai-skills/compare/v1.0.1...v1.0.2) (2026-07-30)
+
+
+### Bug Fixes
+
+* pre-populate PATH with fnm/nvm binary dirs for npx detection ([bdf6dc3](https://github.com/hackwish/ansible-ai-skills/commit/bdf6dc3f995b3761ea3fb81ec909112266eb45e2))
+* **up-to-date:** Update HOW-TO readme ([141fb13](https://github.com/hackwish/ansible-ai-skills/commit/141fb13954af725adb3e8c90414d1320374ea92e))
+
 ## [1.0.1](https://github.com/hackwish/ansible-ai-skills/compare/v1.0.0...v1.0.1) (2026-07-30)
 
 
