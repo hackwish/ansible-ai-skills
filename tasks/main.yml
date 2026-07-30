@@ -37,7 +37,20 @@
     # Add common Node/npm installation paths to PATH
     export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:$PATH"
 
-    # Source shell profiles to initialize nvm, fnm, asdf, etc.
+    # Add fnm and nvm node binary paths directly — these version managers
+    # often guard their eval with [[ -o interactive ]] in .zshrc, so
+    # profile sourcing alone fails in non-interactive Ansible shells.
+    if [ -d "$HOME/.fnm/current/bin" ]; then
+      export PATH="$HOME/.fnm/current/bin:$PATH"
+    fi
+    if [ -d "$HOME/.fnm/aliases/default/bin" ]; then
+      export PATH="$HOME/.fnm/aliases/default/bin:$PATH"
+    fi
+    for _dir in "$HOME/.nvm/versions/node"/*/bin; do
+      [ -d "$_dir" ] && export PATH="$_dir:$PATH"
+    done
+
+    # Source shell profiles to initialize version managers, asdf, etc.
     if [ -f "$HOME/.bash_profile" ]; then
       . "$HOME/.bash_profile"
     elif [ -f "$HOME/.profile" ]; then
@@ -55,7 +68,7 @@
       . "$HOME/.bashrc" 2>/dev/null || true
     fi
 
-    which npx
+    command -v npx
   args:
     executable: /bin/bash
   environment:

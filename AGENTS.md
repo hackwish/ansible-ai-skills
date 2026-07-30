@@ -20,7 +20,7 @@ Standard Ansible role layout — `tasks/main.yml`, `defaults/main.yml`, `meta/ma
 
 ## Non-obvious details
 
-- **npx detection**: The role shell-falls back through `.bash_profile`, `.profile`, `.zshenv`, `.zshrc`, `.bashrc` to find `npx` (nvm/fnm/asdf users). Also sets `HOME` in the environment block so `sudo` doesn't break profile resolution. If it still fails, set `ai_skills_npx_path` explicitly.
+- **npx detection**: The role shell-falls back through `.bash_profile`, `.profile`, `.zshenv`, `.zshrc`, `.bashrc` to find `npx` (nvm/fnm/asdf users). Also sets `HOME` in the environment block so `sudo` doesn't break profile resolution, and pre-populates PATH with common fnm (`~/.fnm/current/bin`, `~/.fnm/aliases/default/bin`) and nvm (`~/.nvm/versions/node/*/bin`) binary directories. If it still fails, set `ai_skills_npx_path` explicitly.
 - **`become` everywhere**: Most tasks run `become: true, become_user: "{{ ai_skills_user }}"`. The role defaults to `SUDO_USER` or `ansible_user_id`.
 - **Skill list format**: Each entry has `repo` (URL or shorthand like `owner/repo`) and optionally `skill` (for multi-skill repos). See defaults for examples.
 - **`--global` flag**: Defaults to `true` (`ai_skills_global: true`), meaning skills install to the user-global config dir, not per-project.
