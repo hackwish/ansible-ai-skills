@@ -1,3 +1,10 @@
+## [1.0.1](https://github.com/hackwish/ansible-ai-skills/compare/v1.0.0...v1.0.1) (2026-07-30)
+
+
+### Bug Fixes
+
+* source .zshenv and set HOME env for npx detection on macOS ([e2af891](https://github.com/hackwish/ansible-ai-skills/commit/e2af891f3ea40f4feba17fb37589839e26648727))
+
 # 1.0.0 (2026-07-09)
 
 
