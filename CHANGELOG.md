@@ -1,3 +1,15 @@
+# [1.1.0](https://github.com/hackwish/ansible-ai-skills/compare/v1.0.2...v1.1.0) (2026-07-30)
+
+
+### Bug Fixes
+
+* **up-to-date:** Update HOW-TO readme ([cefdc8b](https://github.com/hackwish/ansible-ai-skills/commit/cefdc8ba6ee478e273bfb61ae8d678714139e086))
+
+
+### Features
+
+* auto-install Node.js via Homebrew/apt/dnf when npx is missing ([d2fe0fe](https://github.com/hackwish/ansible-ai-skills/commit/d2fe0fef95ae1832ee7de543a98dcc86361390d9))
+
 ## [1.0.2](https://github.com/hackwish/ansible-ai-skills/compare/v1.0.1...v1.0.2) (2026-07-30)
 
 
