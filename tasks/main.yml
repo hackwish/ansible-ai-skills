@@ -44,6 +44,11 @@
       . "$HOME/.profile"
     fi
 
+    # .zshenv is read on every zsh invocation, even non-interactive
+    if [ -f "$HOME/.zshenv" ]; then
+      . "$HOME/.zshenv" 2>/dev/null || true
+    fi
+
     if [ -f "$HOME/.zshrc" ]; then
       . "$HOME/.zshrc" 2>/dev/null || true
     elif [ -f "$HOME/.bashrc" ]; then
@@ -53,6 +58,8 @@
     which npx
   args:
     executable: /bin/bash
+  environment:
+    HOME: "{{ _ai_skills_user_home }}"
   register: _ai_skills_npx_locate
   failed_when: false
   changed_when: false
@@ -94,6 +101,10 @@
       . "$HOME/.profile"
     fi
 
+    if [ -f "$HOME/.zshenv" ]; then
+      . "$HOME/.zshenv" 2>/dev/null || true
+    fi
+
     if [ -f "$HOME/.zshrc" ]; then
       . "$HOME/.zshrc" 2>/dev/null || true
     elif [ -f "$HOME/.bashrc" ]; then
@@ -132,6 +143,10 @@
       . "$HOME/.bash_profile"
     elif [ -f "$HOME/.profile" ]; then
       . "$HOME/.profile"
+    fi
+
+    if [ -f "$HOME/.zshenv" ]; then
+      . "$HOME/.zshenv" 2>/dev/null || true
     fi
 
     if [ -f "$HOME/.zshrc" ]; then
