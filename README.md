@@ -33,6 +33,8 @@ By default, the role installs the following skills:
 11. **`commit-work`** (from `https://github.com/softaworks/agent-toolkit`)
 12. **`daily-meeting-update`** (from `https://github.com/softaworks/agent-toolkit`)
 13. **`JuliusBrussee/caveman`** (Shorthand GitHub repo)
+14. **`avoid-ai-writing`** (from `https://github.com/conorbronsdon/avoid-ai-writing`)
+15. **`humanizer`** (from `https://github.com/blader/humanizer`)
 
 ## How-To: Add New Skills
 
