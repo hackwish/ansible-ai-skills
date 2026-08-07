@@ -15,6 +15,9 @@ Variables can be customized in your playbook or group/host vars. See `defaults/m
 - `ai_skills_npx_path`: Custom path to the `npx` executable if it's not in the target user's standard path or profiles (empty by default to search automatically).
 - `ai_skills_ignore_errors`: Whether to ignore failures for individual skills and continue installing the rest (default: `false`).
 - `ai_skills_global`: Whether to install the skills globally (default: `true`).
+- `ai_skills_nodejs_min_version`: Minimum Node.js version required by the `skills` CLI. The CLI uses `styleText` from `node:util`, which requires Node.js `>= 20.12.0` (default: `20.12.0`).
+- `ai_skills_nodejs_major`: Node.js major version to install when an upgrade is required (default: `22`).
+- `ai_skills_nodejs_upgrade`: Whether to automatically upgrade Node.js when the detected version is older than `ai_skills_nodejs_min_version` (default: `true`).
 
 ### Default Installed Skills
 
