@@ -103,31 +103,75 @@
   changed_when: '"already installed" not in _ai_skills_brew_result.stdout'
   failed_when: false
 
-- name: Attempt to install Node.js when npx is not found (Debian/Ubuntu)
+- name: Ensure prerequisites are present before installing Node.js via Nodesource (Debian/Ubuntu)
   ansible.builtin.apt:
     name:
-      - nodejs
-      - npm
+      - ca-certificates
+      - curl
+      - gnupg
     state: present
     update_cache: true
   become: true
   when:
     - _ai_skills_resolved_npx == ""
     - ansible_os_family == "Debian"
-  register: _ai_skills_apt_result
   failed_when: false
 
-- name: Attempt to install Node.js when npx is not found (RHEL/Fedora)
+- name: Add Nodesource repository for Node.js {{ ai_skills_nodejs_major }} (Debian/Ubuntu)
+  ansible.builtin.shell: |
+    curl -fsSL https://deb.nodesource.com/setup_{{ ai_skills_nodejs_major }}.x | bash -
+  args:
+    executable: /bin/bash
+  become: true
+  when:
+    - _ai_skills_resolved_npx == ""
+    - ansible_os_family == "Debian"
+  register: _ai_skills_nodejs_install_nodesource_result
+  failed_when: false
+
+- name: Install Node.js via apt after Nodesource setup
+  ansible.builtin.apt:
+    name: nodejs
+    state: present
+    update_cache: true
+  become: true
+  when:
+    - _ai_skills_nodejs_install_nodesource_result is defined
+    - _ai_skills_nodejs_install_nodesource_result.rc | default(1) == 0
+  register: _ai_skills_nodejs_install_apt_result
+  failed_when: false
+
+- name: Ensure curl is present before installing Node.js via Nodesource (RHEL/Fedora)
   ansible.builtin.dnf:
-    name:
-      - nodejs
-      - npm
+    name: curl
     state: present
   become: true
   when:
     - _ai_skills_resolved_npx == ""
     - ansible_os_family == "RedHat"
-  register: _ai_skills_dnf_result
+  failed_when: false
+
+- name: Add Nodesource repository for Node.js {{ ai_skills_nodejs_major }} (RHEL/Fedora)
+  ansible.builtin.shell: |
+    curl -fsSL https://rpm.nodesource.com/setup_{{ ai_skills_nodejs_major }}.x | bash -
+  args:
+    executable: /bin/bash
+  become: true
+  when:
+    - _ai_skills_resolved_npx == ""
+    - ansible_os_family == "RedHat"
+  register: _ai_skills_nodejs_install_nodesource_rpm_result
+  failed_when: false
+
+- name: Install Node.js via dnf after Nodesource setup
+  ansible.builtin.dnf:
+    name: nodejs
+    state: present
+  become: true
+  when:
+    - _ai_skills_nodejs_install_nodesource_rpm_result is defined
+    - _ai_skills_nodejs_install_nodesource_rpm_result.rc | default(1) == 0
+  register: _ai_skills_nodejs_install_dnf_result
   failed_when: false
 
 - name: Re-locate npx after install attempt
@@ -163,7 +207,8 @@
   ansible.builtin.fail:
     msg: >
       Could not find 'npx' executable for user '{{ ai_skills_user }}'.
-      Tried auto-install via Homebrew (macOS), apt (Debian), and dnf (RHEL).
+      Tried auto-install via Homebrew (macOS) and the Nodesource repository
+      for Node.js {{ ai_skills_nodejs_major }} (Debian/RHEL).
       Please verify Node.js and npm are installed, or set 'ai_skills_npx_path'
       in your playbook or defaults.
   when: _ai_skills_resolved_npx == ""
