@@ -289,6 +289,33 @@
     - _ai_skills_npx_relocate is defined
     - _ai_skills_npx_relocate.stdout is defined
 
+- name: Verify Node.js version after any upgrade attempt
+  ansible.builtin.shell: |
+    export PATH="{{ _ai_skills_resolved_npx | dirname }}:$PATH"
+    node --version 2>/dev/null | sed 's/^v//'
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ _ai_skills_user_home }}"
+  register: _ai_skills_nodejs_version_final
+  changed_when: false
+  failed_when: false
+  become: true
+  become_user: "{{ ai_skills_user }}"
+  when: _ai_skills_nodejs_upgrade_required | default(false)
+
+- name: Fail if Node.js is still older than the minimum required version
+  ansible.builtin.fail:
+    msg: >
+      Node.js version '{{ _ai_skills_nodejs_version_final.stdout | default('unknown') }}' is still older than
+      the minimum required '{{ ai_skills_nodejs_min_version }}'. The skills CLI imports styleText from
+      node:util, which only exists in Node.js >= 20.12.0. The automatic upgrade did not succeed or is
+      disabled (ai_skills_nodejs_upgrade={{ ai_skills_nodejs_upgrade }}). Install a newer Node.js manually
+      or set 'ai_skills_npx_path' to an npx bundled with a recent Node.js.
+  when: >
+    _ai_skills_nodejs_upgrade_required | default(false) and
+    (_ai_skills_nodejs_version_final.stdout | default('0') | trim) is version(ai_skills_nodejs_min_version, '<')
+
 - name: Install AI agent skills
   ansible.builtin.shell: |
     # Load user shell environments to ensure local agent config directories are accessible
