@@ -172,6 +172,123 @@
   ansible.builtin.debug:
     msg: "Using npx executable at: {{ _ai_skills_resolved_npx }}"
 
+- name: Detect installed Node.js version
+  ansible.builtin.shell: |
+    export PATH="{{ _ai_skills_resolved_npx | dirname }}:$PATH"
+    node --version 2>/dev/null | sed 's/^v//'
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ _ai_skills_user_home }}"
+  register: _ai_skills_nodejs_version
+  changed_when: false
+  failed_when: false
+  become: true
+  become_user: "{{ ai_skills_user }}"
+  when: _ai_skills_resolved_npx != ""
+
+- name: Determine if Node.js version meets the minimum requirement
+  ansible.builtin.set_fact:
+    _ai_skills_nodejs_upgrade_required: >-
+      {{ (_ai_skills_nodejs_version.stdout | default('0') | trim) is version(ai_skills_nodejs_min_version, '<') }}
+  when: _ai_skills_nodejs_version is defined
+
+- name: Debug Node.js version check
+  ansible.builtin.debug:
+    msg: "Detected Node.js: {{ _ai_skills_nodejs_version.stdout | default('unknown') }} | Minimum: {{ ai_skills_nodejs_min_version }} | Upgrade required: {{ _ai_skills_nodejs_upgrade_required | default(false) }}"
+    verbosity: 1
+
+- name: Upgrade Node.js when too old (macOS Homebrew)
+  ansible.builtin.command: brew upgrade node
+  become: false
+  register: _ai_skills_nodejs_brew_result
+  changed_when: '"already installed" not in _ai_skills_nodejs_brew_result.stdout'
+  failed_when: false
+  when:
+    - ai_skills_nodejs_upgrade | bool
+    - _ai_skills_nodejs_upgrade_required | default(false)
+    - ansible_system == "Darwin"
+
+- name: Add Nodesource repository for Node.js {{ ai_skills_nodejs_major }} (Debian/Ubuntu)
+  ansible.builtin.shell: |
+    curl -fsSL https://deb.nodesource.com/setup_{{ ai_skills_nodejs_major }}.x | bash -
+  args:
+    executable: /bin/bash
+  become: true
+  register: _ai_skills_nodejs_nodesource_result
+  failed_when: false
+  when:
+    - ai_skills_nodejs_upgrade | bool
+    - _ai_skills_nodejs_upgrade_required | default(false)
+    - ansible_os_family == "Debian"
+
+- name: Install upgraded Node.js via apt after Nodesource setup
+  ansible.builtin.apt:
+    name: nodejs
+    state: present
+    update_cache: true
+  become: true
+  register: _ai_skills_nodejs_apt_result
+  failed_when: false
+  when:
+    - _ai_skills_nodejs_nodesource_result is defined
+    - _ai_skills_nodejs_nodesource_result.rc | default(1) == 0
+
+- name: Add Nodesource repository for Node.js {{ ai_skills_nodejs_major }} (RHEL/Fedora)
+  ansible.builtin.shell: |
+    curl -fsSL https://rpm.nodesource.com/setup_{{ ai_skills_nodejs_major }}.x | bash -
+  args:
+    executable: /bin/bash
+  become: true
+  register: _ai_skills_nodejs_nodesource_rpm_result
+  failed_when: false
+  when:
+    - ai_skills_nodejs_upgrade | bool
+    - _ai_skills_nodejs_upgrade_required | default(false)
+    - ansible_os_family == "RedHat"
+
+- name: Install upgraded Node.js via dnf after Nodesource setup
+  ansible.builtin.dnf:
+    name: nodejs
+    state: present
+  become: true
+  register: _ai_skills_nodejs_dnf_result
+  failed_when: false
+  when:
+    - _ai_skills_nodejs_nodesource_rpm_result is defined
+    - _ai_skills_nodejs_nodesource_rpm_result.rc | default(1) == 0
+
+- name: Re-locate npx after Node.js upgrade
+  ansible.builtin.shell: |
+    export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:$PATH"
+    if [ -d "$HOME/.fnm/current/bin" ]; then
+      export PATH="$HOME/.fnm/current/bin:$PATH"
+    fi
+    if [ -d "$HOME/.fnm/aliases/default/bin" ]; then
+      export PATH="$HOME/.fnm/aliases/default/bin:$PATH"
+    fi
+    for _dir in "$HOME/.nvm/versions/node"/*/bin; do
+      [ -d "$_dir" ] && export PATH="$_dir:$PATH"
+    done
+    command -v npx
+  args:
+    executable: /bin/bash
+  environment:
+    HOME: "{{ _ai_skills_user_home }}"
+  register: _ai_skills_npx_relocate
+  become: true
+  become_user: "{{ ai_skills_user }}"
+  changed_when: false
+  failed_when: false
+  when: _ai_skills_nodejs_upgrade_required | default(false)
+
+- name: Update resolved npx path after Node.js upgrade
+  ansible.builtin.set_fact:
+    _ai_skills_resolved_npx: "{{ _ai_skills_npx_relocate.stdout | trim if _ai_skills_npx_relocate.rc | default(1) == 0 else _ai_skills_resolved_npx }}"
+  when:
+    - _ai_skills_npx_relocate is defined
+    - _ai_skills_npx_relocate.stdout is defined
+
 - name: Install AI agent skills
   ansible.builtin.shell: |
     # Load user shell environments to ensure local agent config directories are accessible

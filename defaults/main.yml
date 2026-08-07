@@ -12,6 +12,19 @@ ai_skills_npx_path: ""
 # Whether to continue installing subsequent skills if one of them fails.
 ai_skills_ignore_errors: false
 
+# Minimum Node.js version required by the `skills` CLI.
+# The CLI imports `styleText` from `node:util`, which only exists in
+# Node.js >= 20.12.0. If the detected version is older, the role upgrades
+# Node.js before installing skills (see ai_skills_nodejs_upgrade).
+ai_skills_nodejs_min_version: "20.12.0"
+
+# Node.js major version to install when an upgrade is required.
+ai_skills_nodejs_major: "22"
+
+# Whether to automatically upgrade Node.js when it is older than the minimum.
+# Set to false to keep the installed version and manage it manually.
+ai_skills_nodejs_upgrade: true
+
 # Whether to install the skills globally (available for all projects of the user).
 ai_skills_global: true
 
