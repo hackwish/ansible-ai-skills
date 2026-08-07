@@ -1,3 +1,10 @@
+# [1.3.0](https://github.com/hackwish/ansible-ai-skills/compare/v1.2.0...v1.3.0) (2026-08-07)
+
+
+### Features
+
+* **nodejs:** auto-upgrade Node.js when version is too old for skills CLI ([815180e](https://github.com/hackwish/ansible-ai-skills/commit/815180e482a23f804d1e04633b4147a9bbd1e793))
+
 # [1.2.0](https://github.com/hackwish/ansible-ai-skills/compare/v1.1.0...v1.2.0) (2026-08-05)
 
 
