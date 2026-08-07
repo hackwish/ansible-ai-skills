@@ -1,3 +1,10 @@
+# [1.2.0](https://github.com/hackwish/ansible-ai-skills/compare/v1.1.0...v1.2.0) (2026-08-05)
+
+
+### Features
+
+* **defaults:** add avoid-ai-writing and humanizer to ai_skills list ([048a397](https://github.com/hackwish/ansible-ai-skills/commit/048a39730e0e933eb0e62aae9d7ffa80563d19c6))
+
 # [1.1.0](https://github.com/hackwish/ansible-ai-skills/compare/v1.0.2...v1.1.0) (2026-07-30)
 
 
