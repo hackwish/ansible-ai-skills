@@ -1,3 +1,15 @@
+# [1.4.0](https://github.com/hackwish/ansible-ai-skills/compare/v1.3.0...v1.4.0) (2026-08-07)
+
+
+### Bug Fixes
+
+* **nodejs:** fail with clear message if Node.js is still too old after upgrade ([e4e0968](https://github.com/hackwish/ansible-ai-skills/commit/e4e09682fd6905667fcaee42fb70dca6797dbb41))
+
+
+### Features
+
+* **nodejs:** install modern Node.js via Nodesource when npx is missing ([2f1a594](https://github.com/hackwish/ansible-ai-skills/commit/2f1a59407b46527768630a85661a4fada02c5408))
+
 # [1.3.0](https://github.com/hackwish/ansible-ai-skills/compare/v1.2.0...v1.3.0) (2026-08-07)
 
 
