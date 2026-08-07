@@ -4,7 +4,7 @@ An Ansible role to install and configure agent skills using the Skills CLI (`npx
 
 ## Requirements
 
-- **Node.js and npm**: The role relies on `npx` (included with npm v5.2.0+) to fetch and run the Skills package manager.
+- **Node.js and npm**: The role relies on `npx` (included with npm v5.2.0+) to fetch and run the Skills package manager. The Skills CLI requires **Node.js >= 20.12.0** (`styleText` from `node:util`). If `npx` is missing, the role installs Node.js automatically via Homebrew (macOS) or the Nodesource repository (Debian/RHEL), which provides a recent version. If Node.js is too old, the role upgrades it automatically (see `ai_skills_nodejs_upgrade`).
 - **Access to GitHub**: Since the skills package manager downloads repositories directly from GitHub, active internet access is required.
 
 ## Role Variables
