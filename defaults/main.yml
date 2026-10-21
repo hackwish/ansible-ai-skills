@@ -60,3 +60,7 @@ ai_skills:
   skill: "avoid-ai-writing"
 - repo: "https://github.com/blader/humanizer"
   skill: "humanizer"
+- repo: "https://github.com/addyosmani/agent-skills"
+  skill: "web-performance-optimizer"
+- repo: "https://github.com/addyosmani/agent-skills"
+  skill: "spec-driven-development"  
