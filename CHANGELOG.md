@@ -1,3 +1,10 @@
+## [1.4.2](https://github.com/hackwish/ansible-ai-skills/compare/v1.4.1...v1.4.2) (2026-10-26)
+
+
+### Bug Fixes
+
+* **skills:** update skill lists. Add more specialized IT skills ([c494352](https://github.com/hackwish/ansible-ai-skills/commit/c49435291748b9a36d90c0f6e8b3201e0c3009e2))
+
 ## [1.4.1](https://github.com/hackwish/ansible-ai-skills/compare/v1.4.0...v1.4.1) (2026-10-21)
 
 
