@@ -1,3 +1,10 @@
+## [1.4.1](https://github.com/hackwish/ansible-ai-skills/compare/v1.4.0...v1.4.1) (2026-10-21)
+
+
+### Bug Fixes
+
+* **repos:** add sdd skill ([ebf84ea](https://github.com/hackwish/ansible-ai-skills/commit/ebf84ea2588bb161a1da57dd26718d01d97bf026))
+
 # [1.4.0](https://github.com/hackwish/ansible-ai-skills/compare/v1.3.0...v1.4.0) (2026-08-07)
 
 
